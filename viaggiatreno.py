@@ -1,8 +1,7 @@
 
 from datetime import datetime
-# import urllib library 
 from urllib.request import urlopen 
-# import json 
+
 import json 
 import xlsxwriter
 from xlsxwriter.utility import xl_col_to_name
