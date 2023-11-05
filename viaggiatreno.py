@@ -33,31 +33,32 @@ if checkFile==True:
 else:
     wb = Workbook()
     print ("Il file " + nomeFile + " non esiste")
-
+if 'Sheet' in wb.sheetnames:
+    wb.remove(wb['Sheet'])
 for codiceTreno in treni:
     try:
         url = "http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/andamentoTreno/"+treni[codiceTreno]+"/"+codiceTreno+"/"+str(timestamp)+"000"
         print("url =", url)
         response = urlopen(url) 
         print(response.getcode())
+        nomeSheet = codiceTreno #+'_'+data_json['origine'][0:3]+'_'+data_json['destinazione'][0:3]+'_'+orarioDiPartenza.strftime("%H")+orarioDiPartenza.strftime("%M")
+        if nomeSheet in wb.sheetnames:
+            ws = wb[nomeSheet]
+            print ("Lo sheet " + nomeSheet + " esiste")
+        else:
+            ws = wb.create_sheet(nomeSheet)
+            print ("Lo sheet " + nomeSheet + " non esiste")
+        rowCell = dataOdierna.day+1
+        colCell = 1
+        print("data odierna =", dataOdierna)
+        ws.cell(row=1, column=1).value = "Giorno"
+        ws.cell(row=34, column=1).value = "Totale Ritardo"
+        ws.cell(row=35, column=1).value = "Media Ritardo"
+        ws.cell(row=rowCell, column=colCell).value = dataOdierna
         if response.getcode()==200:
             data_json = json.loads(response.read())   
-            rowCell = dataOdierna.day+1
-            colCell = 1
             orarioDiPartenza = datetime.fromtimestamp(int(round(data_json['orarioPartenzaZero']/1000)))
             print("%s:%s" % (orarioDiPartenza.strftime("%H"), orarioDiPartenza.strftime("%M")))
-            nomeSheet = codiceTreno+'_'+data_json['origine'][0:3]+'_'+data_json['destinazione'][0:3]+'_'+orarioDiPartenza.strftime("%H")+orarioDiPartenza.strftime("%M")
-            if nomeSheet in wb.sheetnames:
-                ws = wb[nomeSheet]
-                print ("Lo sheet" + nomeSheet + " esiste")
-            else:
-                ws = wb.create_sheet(nomeSheet)
-                print ("Lo sheet" + nomeSheet + " non esiste")
-            print("data odierna =", dataOdierna)
-            ws.cell(row=1, column=1).value = "Giorno"
-            ws.cell(row=34, column=1).value = "Totale Ritardo"
-            ws.cell(row=35, column=1).value = "Media Ritardo"
-            ws.cell(row=rowCell, column=colCell).value = dataOdierna
             colCell=2
             for fermate in data_json['fermate']:
                 print(str(fermate['stazione']) + "," + str(fermate['ritardo']))
@@ -73,6 +74,7 @@ for codiceTreno in treni:
                 ws.cell(row=35, column=colCell).value = '=AVERAGE(%s2:%s32)' %(columnLetter,columnLetter)
                 colCell = colCell+1
         else:
+            ws.cell(row=rowCell, column=2).value = "N/D"
             print("Informazioni non disponibili per il treno "  +treni[codiceTreno]+ " e per il giorno " +str(dataOdierna))
     except:
         print("Si è verificato un errore nel recupero delle informazioni") 
