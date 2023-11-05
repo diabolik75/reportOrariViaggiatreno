@@ -1,10 +1,17 @@
 
 from datetime import datetime
 from urllib.request import urlopen 
-
+from openpyxl import Workbook
+from openpyxl import load_workbook
+from openpyxl.styles import PatternFill
+from openpyxl.utils import get_column_letter
 import json 
-import xlsxwriter
-from xlsxwriter.utility import xl_col_to_name
+#import xlsxwriter
+#from xlsxwriter.utility import xl_col_to_name
+
+import os.path
+
+
 #hasmap numerotreno:codicestazione
 treni = {
     "5838" : "S09211",
@@ -16,57 +23,57 @@ dataOdierna = dataOdierna.replace(hour=0, minute=0, second=0, microsecond=0)
 #oggi = dataCompleta.date() 
 print('Date and Time is:', dataOdierna)
 timestamp = int(round(datetime.timestamp(dataOdierna)))
-#print("timestamp =", timestamp)
-workbook = xlsxwriter.Workbook('report_orari_treno_'+str(dataOdierna.year)+str(dataOdierna.month)+'.xlsx')
-cell_format_standard = workbook.add_format()
-cell_format_ritardo = workbook.add_format()
-cell_date_format = workbook.add_format({'num_format': 'dd/mm/yyyy'})
-cell_stazioni_format = workbook.add_format()
-cell_stazioni_format.set_rotation(45)
-cell_stazioni_format.set_bg_color('silver')
+nomeFile = 'report_orari_treno_new_'+str(dataOdierna.year)+str(dataOdierna.month)+'.xlsx'
+path = './'+nomeFile
+checkFile = os.path.isfile(path)
+print("Verifica esistenza del file :" + str(checkFile))
+if checkFile==True:
+    wb = load_workbook(nomeFile)
+    print ("Il file " + nomeFile + " esiste")
+else:
+    wb = Workbook()
+    print ("Il file " + nomeFile + " non esiste")
+
 for codiceTreno in treni:
     try:
-
-        # store the URL in url as  
-        # parameter for urlopen 
         url = "http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/andamentoTreno/"+treni[codiceTreno]+"/"+codiceTreno+"/"+str(timestamp)+"000"
         print("url =", url)
-        # store the response of URL 
         response = urlopen(url) 
         print(response.getcode())
         if response.getcode()==200:
             data_json = json.loads(response.read())   
-            #print(data_json) 
-            row = dataOdierna.day
-            col = 0
+            rowCell = dataOdierna.day+1
+            colCell = 1
             orarioDiPartenza = datetime.fromtimestamp(int(round(data_json['orarioPartenzaZero']/1000)))
             print("%s:%s" % (orarioDiPartenza.strftime("%H"), orarioDiPartenza.strftime("%M")))
-            worksheet = workbook.add_worksheet(codiceTreno+'_'+data_json['origine'][0:3]+'_'+data_json['destinazione'][0:3]+'_'+orarioDiPartenza.strftime("%H")+orarioDiPartenza.strftime("%M"))
-            worksheet.write(0,0, "Giorno")
-            worksheet.write(33,0, "Totale Ritardo")
-            worksheet.write(34,0, "Media Ritardo")
-            worksheet.write(row,col, dataOdierna, cell_date_format)
+            nomeSheet = codiceTreno+'_'+data_json['origine'][0:3]+'_'+data_json['destinazione'][0:3]+'_'+orarioDiPartenza.strftime("%H")+orarioDiPartenza.strftime("%M")
+            if nomeSheet in wb.sheetnames:
+                ws = wb[nomeSheet]
+                print ("Lo sheet" + nomeSheet + " esiste")
+            else:
+                ws = wb.create_sheet(nomeSheet)
+                print ("Lo sheet" + nomeSheet + " non esiste")
             print("data odierna =", dataOdierna)
-            # Iterating through the json
-            # list
-            col=1
+            ws.cell(row=1, column=1).value = "Giorno"
+            ws.cell(row=34, column=1).value = "Totale Ritardo"
+            ws.cell(row=35, column=1).value = "Media Ritardo"
+            ws.cell(row=rowCell, column=colCell).value = dataOdierna
+            colCell=2
             for fermate in data_json['fermate']:
                 print(str(fermate['stazione']) + "," + str(fermate['ritardo']))
-                worksheet.write(0,col, str(fermate['stazione']),cell_stazioni_format)
+                ws.cell(row=1, column=colCell).value = str(fermate['stazione'])
                 if (fermate['ritardo']>0):
-                    cell_format_ritardo.set_bg_color('yellow')
-                    worksheet.write(row,col, fermate['ritardo'],cell_format_ritardo)
+                    ws.cell(row=rowCell, column=colCell).value = fermate['ritardo']
+                    ws.cell(row=rowCell, column=colCell).fill = PatternFill(start_color='fde910',end_color='fde910',fill_type='solid')
                     print('yellow')
                 else:
-                    cell_format_standard.set_bg_color(False)
-                    worksheet.write(row,col, fermate['ritardo'],cell_format_standard)
-                column_letter= xlsxwriter.utility.xl_col_to_name(col)
-                print (column_letter)
-                worksheet.write(33,col, '=SUM(%s2:%s32)' %(column_letter,column_letter))
-                worksheet.write(34,col, '=AVERAGE(%s2:%s32)' %(column_letter,column_letter))
-                col = col+1
+                    ws.cell(row=rowCell, column=colCell).value = fermate['ritardo']
+                columnLetter= get_column_letter(colCell)
+                ws.cell(row=34, column=colCell).value = '=SUM(%s2:%s32)' %(columnLetter,columnLetter)
+                ws.cell(row=35, column=colCell).value = '=AVERAGE(%s2:%s32)' %(columnLetter,columnLetter)
+                colCell = colCell+1
         else:
             print("Informazioni non disponibili per il treno "  +treni[codiceTreno]+ " e per il giorno " +str(dataOdierna))
     except:
-        print("Si è verificato un errore nel recupero delle informazioni")
-workbook.close()   
+        print("Si è verificato un errore nel recupero delle informazioni") 
+wb.save(nomeFile)

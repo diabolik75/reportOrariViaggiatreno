@@ -7,9 +7,9 @@ Lo scopo di questo codice consiste nella generazione di un file excel sui ritard
 
 ## Requisiti
 * Python 3.1 
-* xlsxwriter (https://xlsxwriter.readthedocs.io/)
+* openpyxl (https://openpyxl.readthedocs.io/en/stable/tutorial.html)
 
-##Documenti
+## Documenti
 
 Lo script utilizza fondamentalmente le API recuperabili direttamente dal portale Viaggiatreno mediante esplorazione delle chiamate di rete del browser.
 
@@ -23,6 +23,6 @@ La coppia codice_stazione e codice_treno è recuperabile dalla seguente API:
 All'interno del codice è definita una HashMap (chiave - valore) necessaria per definire la lista dei treni che si vogliono tracciare. 
 All'interno del foglio excel verrà creato un tab per ciascun treno e per ciascun treno verranno forniti i ritardi giornalieri suddivisi per le varie stazioni.
 
-##Note
+## Note
 Il servizio é svolto a scopo di studio, le informazioni non sono pubblicamente accessibili nonostante l'azienda sia pubblica.
 
