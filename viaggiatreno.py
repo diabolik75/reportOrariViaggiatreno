@@ -23,7 +23,7 @@ dataOdierna = dataOdierna.replace(hour=0, minute=0, second=0, microsecond=0)
 #oggi = dataCompleta.date() 
 print('Date and Time is:', dataOdierna)
 timestamp = int(round(datetime.timestamp(dataOdierna)))
-nomeFile = 'report_orari_treno_new_'+str(dataOdierna.year)+str(dataOdierna.month)+'.xlsx'
+nomeFile = 'report_orari_treno_'+str(dataOdierna.year)+str(dataOdierna.month)+'.xlsx'
 path = './'+nomeFile
 checkFile = os.path.isfile(path)
 print("Verifica esistenza del file :" + str(checkFile))
