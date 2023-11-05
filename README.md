@@ -5,7 +5,23 @@ Questo codice è da considerarsi una bozza: sono stati implementati solo i metod
 
 Lo scopo di questo codice consiste nella generazione di un file excel sui ritardi di una lista di treni censiti.
 
-# Requisiti
-* Python 3.1
+## Requisiti
+* Python 3.1 
 * xlsxwriter (https://xlsxwriter.readthedocs.io/)
+
+##Documenti
+
+Lo script utilizza fondamentalmente le API recuperabili direttamente dal portale Viaggiatreno mediante esplorazione delle chiamate di rete del browser.
+
+L'API utilizzata per la costruzione del report excel è
+* http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/andamentoTreno/[codice_stazione_]/[codice_treno]/[timestamp_DataOdierna]
+e prevede tre parametri in ingresso definiti dal codice della stazione, numero del treno e la data odierna convertita in timestamp utc.
+
+La coppia codice_stazione e codice_treno è recuperabile dalla seguente API:
+* http://www.viaggiatreno.it/infomobilita/resteasy/viaggiatreno/cercaNumeroTrenoTrenoAutocomplete/[numero_treno]
+
+All'interno del codice è definita una HashMap (chiave - valore) necessaria per definire la lista dei treni che si vogliono tracciare. 
+All'interno del foglio excel verrà creato un tab per ciascun treno e per ciascun treno verranno forniti i ritardi giornalieri suddivisi per le varie stazioni.
+
+
 
