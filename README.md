@@ -23,5 +23,6 @@ La coppia codice_stazione e codice_treno è recuperabile dalla seguente API:
 All'interno del codice è definita una HashMap (chiave - valore) necessaria per definire la lista dei treni che si vogliono tracciare. 
 All'interno del foglio excel verrà creato un tab per ciascun treno e per ciascun treno verranno forniti i ritardi giornalieri suddivisi per le varie stazioni.
 
-
+##Note
+Il servizio é svolto a scopo di studio, le informazioni non sono pubblicamente accessibili nonostante l'azienda sia pubblica.
 
